@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 dotenv.config();
 
+import logger from './Logger.js';
+
 export class UserService {
     constructor(repository) {
         this.repository = repository;
@@ -11,7 +13,6 @@ export class UserService {
     async getUserByName(user) {
         const res = await this.repository.getUserByName(user.name);
         
-        //console.log("Service RES: " + res);
         if(res === null) {
             return {
                 status: "Failed",
@@ -27,6 +28,8 @@ export class UserService {
                 process.env.JWT_SECRET,
                 { expiresIn: process.env.JWT_EXPIRES_IN }
             );
+
+            logger.info(`User "${user.name}" has been logged`);
 
             return { 
                 status: process.env.SUCCESS_MESSAGE,

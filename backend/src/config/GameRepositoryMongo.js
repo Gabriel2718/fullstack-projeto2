@@ -1,28 +1,39 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { MongoClient } from 'mongodb';
+import { CacheManager } from './CacheManager.js';
+import { db } from './db.js';
 
 export class GameRepositoryMongo {
-    mongoClient;
-    collection;
-    
-    constructor(collection) {
+    static instance = null;
+
+    constructor(collection, cacheManager) {
+        if(GameRepositoryMongo.instance) {
+            return GameRepositoryMongo.instance
+        }
         this.collection = collection;
+        this.cacheManager = cacheManager;
+        GameRepositoryMongo.instance = this;
     }
 
-    static async create() {
-        const client = new MongoClient(process.env.MONGODB_URI);
-        await client.connect();
+    static async getInstance() {
+        if(!GameRepositoryMongo.instance) {
+            const collection = db.collection(process.env.GAME_COLLECTION);
 
-        const db = client.db(process.env.DB_NAME);
-        const collection = db.collection(process.env.GAME_COLLECTION);
+            const cacheManager = await CacheManager.getInstance();
+            GameRepositoryMongo.instance = new GameRepositoryMongo(collection, cacheManager);
+            GameRepositoryMongo.instance.reloadCache();
+        }
+        return GameRepositoryMongo.instance;
+    }
 
-        return new GameRepositoryMongo(collection);
+    async reloadCache() {
+        await this.cacheManager.setMany(await this.getAllGames());
     }
 
     async insertGame(game) {
         await this.collection.insertOne(game);
+        this.cacheManager.setGame(game);
     }
 
     async getAllGames() {

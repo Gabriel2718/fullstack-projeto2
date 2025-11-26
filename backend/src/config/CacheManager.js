@@ -1,43 +1,88 @@
-import { Game } from '../models/Game.js';
-import { GameRepositoryMongo } from './GameRepositoryMongo.js';
+import { createClient } from 'redis';
 
 export class CacheManager {
     static instance = null;
 
-    constructor(repository) {
+    constructor(redisClient) {
         if(CacheManager.instance) {
             return CacheManager.instance;
         }
-        this.games = [];
-        this.repository = repository;
+        //this.games = [];
+        this.redisClient = redisClient;
         CacheManager.instance = this;
     }
 
     static async getInstance() {
         if(!CacheManager.instance) {
-            CacheManager.instance = new CacheManager(await GameRepositoryMongo.create());
-            await CacheManager.instance.reloadFromDB();
+            CacheManager.instance = new CacheManager(
+                await createClient()
+                .on("error", (err) => console.log("Redis Client Error", err))
+                .connect()
+            );
         }
         return CacheManager.instance;
     }
 
-    async reloadFromDB() {
-        const res = await this.repository.getAllGames();
-        this.games = res.map(game => Game.fromObject(game));
+    async setMany(games) {
+        await Promise.all(
+            games.map(game => {
+                return this.redisClient.set(
+                    game.title.toUpperCase().replaceAll(' ', '_').replaceAll(':', ''),
+                    JSON.stringify({
+                        title: game.title,
+                        imageUrl: game.imageUrl,
+                        normalPrice: game.normalPrice,
+                        salePrice: game.salePrice,
+                        storeUrl: game.storeUrl
+                    })
+                );
+            })
+        );
+
+        return this;
     }
 
-    getAllGames() {
-        return this.games;
+    async getAllGames() {
+        const keys = await this.redisClient.keys('*');
+        let games = await Promise.all(
+            keys.map(async key => {
+                const data = await this.redisClient.get(key);
+                return JSON.parse(data);
+            })
+        );
+        
+        return games;
     }
 
-    getGameByTitle(title) {
-        //const main = this.games.filter(game => game.title.toUpperCase() == title.toUpperCase());
-        const main = this.games.filter(game => game.title.toUpperCase().includes(title.toUpperCase()));
+    async getGameByTitle(title) {
+        const keys = await this.redisClient.keys('*');
 
-        const similar = this.games.filter(game => 
-            game.title[0].toUpperCase() == title[0].toUpperCase() 
-            && game.title[1].toUpperCase() == title[1].toUpperCase() 
-            && !game.title.toUpperCase().includes(title.toUpperCase())
+        let main = await Promise.all(
+            keys.map(async key =>{
+                if(key.includes(title
+                    .toUpperCase()
+                    .replaceAll(' ', '_')
+                    .replaceAll(':', '')
+                )) {
+                    const data = await this.redisClient.get(key)
+                    return JSON.parse(data);
+                }
+            })
+        );
+
+        let similar = await Promise.all(
+            keys.map(async key => {
+                if(key == title[0].toUpperCase()
+                    && key == title[1].toUpperCase()
+                    && key != title
+                    .toUpperCase()
+                    .replaceAll(' ', '_')
+                    .replaceAll(':', '')
+                ) {
+                    const data = await this.redisClient.get(key)
+                    return JSON.parse(data);
+                }
+            })
         );
 
         const result = [];
@@ -50,11 +95,35 @@ export class CacheManager {
             result.push(...similar);
         }
 
-        return result;
+        return result.filter(res => res);
     }
 
-    getGameByExactTitle(title) {
-        const game = this.games.filter(game => game.title.toUpperCase() == title.toUpperCase());
-        return game[0];
+    async setGame(game) {
+        await this.redisClient.set(
+            game.title
+            .toUpperCase()
+            .replaceAll(' ', '_')
+            .replaceAll(':', ''),
+            JSON.stringify({
+                title: game.title,
+                imageUrl: game.imageUrl,
+                normalPrice: game.normalPrice,
+                salePrice: game.salePrice,
+                storeUrl: game.storeUrl
+            })
+        );
+    }
+
+    async getGameByExactTitle(title) {
+        /*const game = this.games.filter(game => game.title.toUpperCase() == title.toUpperCase());
+        return game[0];*/
+
+        const game = await this.redisClient.get(title
+            .toUpperCase()
+            .replaceAll(' ', '_')
+            .replaceAll(':', '')
+        );
+
+        return game;
     }
 }

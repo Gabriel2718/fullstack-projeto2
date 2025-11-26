@@ -23,7 +23,6 @@ export class UserRepositoryMongo {
 
     async getUserByName(userName) {
         const res = await this.collection.findOne({ name: userName});
-        //console.log("Rep RES: " + res);
         return res;
     }
 }
