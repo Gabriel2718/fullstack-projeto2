@@ -12,7 +12,7 @@ export function HeaderSnackbar() {
         sx={{ zIndex: 2000 }}
     >
         <Alert
-            severity={state.headerSnackbar.message == 'Game added successfully' ? 'success' : 'error'}
+            severity={state.headerSnackbar.message.includes('successfuly') ? 'success' : 'error'}
         >{state.headerSnackbar.message}</Alert>
     </Snackbar>
 }
