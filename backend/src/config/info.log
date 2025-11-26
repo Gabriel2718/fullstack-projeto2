@@ -137,3 +137,29 @@
 {"level":"info","message":"Search from ::1"}
 {"level":"info","message":"Login attempt from ::1"}
 {"level":"info","message":"User \"user1\" has been logged"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Login attempt from ::1"}
+{"level":"info","message":"User \"user1\" has been logged"}
+{"level":"info","message":"Post attempt from user1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Login attempt from ::1"}
+{"level":"info","message":"User \"user1\" has been logged"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Login attempt from ::ffff:127.0.0.1"}
+{"level":"info","message":"User \"user1\" has been logged"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Login attempt from ::ffff:127.0.0.1"}
+{"level":"info","message":"User \"user1\" has been logged"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::ffff:127.0.0.1"}

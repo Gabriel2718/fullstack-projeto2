@@ -6,7 +6,7 @@ import { authMiddleware } from '../config/AuthMiddleware.js';
 import { CacheManager } from '../config/CacheManager.js';
 import { GamePostValidator } from '../config/GamePostValidator.js';
 import validator from "validator";
-import { body, validationResult } from 'express-validator';
+//import { body, validationResult } from 'express-validator';
 import logger from '../config/Logger.js';
 
 const service = new GameService(
@@ -44,7 +44,7 @@ route.post("/", [
         body("salePrice").trim().toFloat(),
         body("storeUrl").trim().isURL()
     ], 
-    (req, res, next) => {
+    /*(req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({
@@ -53,7 +53,7 @@ route.post("/", [
             });
         }
         next();
-    },
+    },*/
     authMiddleware, 
     async (req, res) => {
         const { 
