@@ -28,6 +28,7 @@ route.post("/", [
     const errors = validateLogin({ name, password });
 
     if(errors.length > 0) {
+        console.log(errors);
         return res.status(400).json({
             status: 'Failed',
             description: 'Empty field(s)',

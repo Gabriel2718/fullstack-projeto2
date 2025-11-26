@@ -28,7 +28,7 @@ export class GameRepositoryMongo {
     }
 
     async reloadCache() {
-        await this.cacheManager.setMany(await this.getAllGames());
+        await this.cacheManager.reloadCache(await this.getAllGames());
     }
 
     async insertGame(game) {

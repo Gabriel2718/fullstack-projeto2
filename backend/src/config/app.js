@@ -14,7 +14,7 @@ const app = express();
 
 const globalLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    limit: 10
+    limit: 5
 })
 
 const loginLimiter = rateLimit({

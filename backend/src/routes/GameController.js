@@ -85,8 +85,8 @@ route.post("/", [
                 status: process.env.SUCCESS_MESSAGE
             });
         } catch(error) {
-            return res.status(500).json({ message: 'Internal server error' });
             logger.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
         };
     }
 );

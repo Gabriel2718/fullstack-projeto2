@@ -23,7 +23,9 @@ export class CacheManager {
         return CacheManager.instance;
     }
 
-    async setMany(games) {
+    async reloadCache(games) {
+        await this.redisClient.flushAll();
+
         await Promise.all(
             games.map(game => {
                 return this.redisClient.set(
