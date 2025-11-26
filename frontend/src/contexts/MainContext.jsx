@@ -4,6 +4,11 @@ const initialState = {
     games: [],
     page: 0,
     titleParam: '',
+    gridAlternativeMessage: 'No results...',
+    headerSnackbar: {
+        isOpen: false,
+        message: 'No results'
+    },
     token: ''
 }
 
@@ -15,6 +20,10 @@ function reducer(state, action) {
             return { ...state, page: action.payload };
         case 'SET_TITLE_PARAM':
             return { ...state, titleParam: action.payload, page: 0 };
+        case 'SET_GRID_ALTERNATIVE_MESSAGE':
+            return { ...state, gridAlternativeMessage: action.payload };
+        case 'SET_HEADER_SNACKBAR':
+            return { ...state, headerSnackbar: action.payload };
         case 'SET_TOKEN':
             return { ...state, token: action.payload };
         default:
@@ -30,10 +39,17 @@ export function PageProvider({ children }) {
     useEffect(() => {
         async function getGames() {
             //fetch(`http://localhost:3000/games?pageNumber=${state.page}${state.titleParam}`).
-            fetch(`http://localhost:3000/games?pageNumber=${state.page}&title=${state.titleParam}`).
-                then((res) => res.json()).
+            fetch(`https://localhost:3001/games?pageNumber=${state.page}&title=${state.titleParam}`).
                 then((res) => {
-                    dispatch({ type: 'SET_GAMES', payload: res });
+                    if(res.status == 429) {
+                        dispatch({ type: 'SET_GRID_ALTERNATIVE_MESSAGE', payload: 'Too many requests' });
+                        dispatch({ type: 'SET_GAMES', payload: [] });
+                        return null;
+                    }
+                    return res.json();
+                }).
+                then((res) => {
+                    if(res) dispatch({ type: 'SET_GAMES', payload: res });
                 });
         }
         getGames();

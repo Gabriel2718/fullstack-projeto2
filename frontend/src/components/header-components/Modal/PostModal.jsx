@@ -1,9 +1,8 @@
 import { Modal } from './Modal';
 import { usePageContext } from '../../../contexts/MainContext';
 import { useState } from 'react';
+import { useHeaderSnackbar } from '../HeaderSnackbar';
 import '../../style.css';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 
 export function PostModal({ isOpen, onClose, onPost, onOpenLoginModal }) {
     const { state, dispatch } = usePageContext();
@@ -20,15 +19,6 @@ export function PostModal({ isOpen, onClose, onPost, onOpenLoginModal }) {
     const [salePriceInputPlaceholder, setSalePriceInputPlaceholder] = useState('Current Price');
     const [storeUrlInputPlaceholder, setStoreUrlInputPlaceholder] = useState('Store URL');
 
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-
-    const showMessage = (message) => {
-        setSnackbarMessage(message);
-        setSnackbarOpen(true);
-        setTimeout(() => setSnackbarOpen(false), 3000);
-    };
-
     const resetInput = () => {
         setTitleValue('');
         setImageUrlValue('');
@@ -42,6 +32,8 @@ export function PostModal({ isOpen, onClose, onPost, onOpenLoginModal }) {
         setSalePriceInputPlaceholder('Current Price');
         setStoreUrlInputPlaceholder('Store URL');
     };
+
+    const { showMessage } = useHeaderSnackbar();
 
     return <>
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -131,34 +123,43 @@ export function PostModal({ isOpen, onClose, onPost, onOpenLoginModal }) {
                                 dispatch({ type: 'SET_TOKEN', payload: '' });
                                 onOpenLoginModal();
                                 showMessage('Session expired');
-                            } else if (res.status == 409) {
+                            } else if (res.status == 400) {
                                 res.json().
                                     then(body => {
-                                        if (body.description.title.status != 'Ok') {
-                                            setTitleInputPlaceholder(body.description.title.description);
+
+                                        const fieldsWithError = body.errors.reduce((acc, error) => {
+                                            acc[error.path] = error.msg;
+                                            return acc
+                                        }, {})
+
+                                        if (fieldsWithError['title']) {
+                                            setTitleInputPlaceholder(fieldsWithError['title']);
                                             setTitleValue('');
                                         } else setTitleInputPlaceholder('Title');
 
-                                        if (body.description.imageUrl.status != 'Ok') {
-                                            setImageUrlInputPlaceholder(body.description.imageUrl.description);
+                                        if (fieldsWithError['imageUrl']) {
+                                            setImageUrlInputPlaceholder(fieldsWithError['imageUrl']);
                                             setImageUrlValue('');
                                         } else setImageUrlInputPlaceholder('Image URL');
 
-                                        if (body.description.normalPrice.status != 'Ok') {
-                                            setNormalPriceInputPlaceholder(body.description.normalPrice.description);
+                                        if (fieldsWithError['normalPrice']) {
+                                            setNormalPriceInputPlaceholder(fieldsWithError['normalPrice']);
                                             setNormalPriceValue('');
                                         } else setNormalPriceInputPlaceholder('Normal Price');
 
-                                        if (body.description.salePrice.status != 'Ok') {
-                                            setSalePriceInputPlaceholder(body.description.salePrice.description);
+                                        if (fieldsWithError['salePrice']) {
+                                            setSalePriceInputPlaceholder(fieldsWithError['salePrice']);
                                             setSalePriceValue('');
                                         } else setSalePriceInputPlaceholder('Current Price');
 
-                                        if (body.description.storeUrl.status != 'Ok') {
-                                            setStoreUrlInputPlaceholder(body.description.storeUrl.description);
+                                        if (fieldsWithError['storeUrl']) {
+                                            setStoreUrlInputPlaceholder(fieldsWithError['storeUrl']);
                                             setStoreUrlValue('');
                                         } else setStoreUrlInputPlaceholder('Store URL');
                                     })
+                            } else if (res.status == 429) {
+                                onClose();
+                                showMessage('Too many requests');
                             }
                         });
                     }}
@@ -166,15 +167,6 @@ export function PostModal({ isOpen, onClose, onPost, onOpenLoginModal }) {
             </div>
 
         </Modal>
-        <Snackbar
-            open={snackbarOpen}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            sx={{ zIndex: 2000 }}
-        >
-            <Alert
-                severity={snackbarMessage == 'Game added successfully' ? 'success' : 'error'}
-            >{snackbarMessage}</Alert>
-        </Snackbar>
     </>
 
 }

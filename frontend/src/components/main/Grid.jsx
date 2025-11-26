@@ -6,7 +6,7 @@ export function Grid() {
     const { state } = usePageContext();
 
     return <div className='main-content'>
-        {state.games.length === 0 && <h2>Fim da visualização...</h2>}
+        {state.games.length === 0 && <h2>{state.gridAlternativeMessage}</h2>}
         {state.games.map((game) => (
             <GameCard
                 title={game.title} 
