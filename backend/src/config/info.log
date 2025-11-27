@@ -163,3 +163,6 @@
 {"level":"info","message":"User \"user1\" has been logged"}
 {"level":"info","message":"Search from ::ffff:127.0.0.1"}
 {"level":"info","message":"Search from ::ffff:127.0.0.1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}
+{"level":"info","message":"Search from ::1"}

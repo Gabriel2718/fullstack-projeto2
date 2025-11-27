@@ -6,7 +6,7 @@ import { authMiddleware } from '../config/AuthMiddleware.js';
 import { CacheManager } from '../config/CacheManager.js';
 import { GamePostValidator } from '../config/GamePostValidator.js';
 import validator from "validator";
-//import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import logger from '../config/Logger.js';
 
 const service = new GameService(
