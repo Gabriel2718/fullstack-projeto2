@@ -5,8 +5,8 @@ import validator from 'validator';
 import logger from '../config/Logger.js';
 import { body } from 'express-validator'
 import express from 'express';
-import { UserRepositoryMongo } from '../config/UserRepositoryMongo.js';
-import { UserService } from '../config/UserService.js';
+import { UserRepositoryMongo } from '../config/repositories/UserRepositoryMongo.js';
+import { UserService } from '../config/services/UserService.js';
 import { User } from '../models/User.js';
 
 

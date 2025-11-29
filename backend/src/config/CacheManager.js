@@ -1,30 +1,36 @@
 import { createClient } from 'redis';
+import { GameRepositoryMongo } from './repositories/GameRepositoryMongo';
 
 export class CacheManager {
     static instance = null;
 
-    constructor(redisClient) {
-        if(CacheManager.instance) {
-            return CacheManager.instance;
-        }
-        //this.games = [];
+    constructor(repository, redisClient) {
         this.redisClient = redisClient;
-        CacheManager.instance = this;
+        this.repository = repository;
     }
 
     static async getInstance() {
         if(!CacheManager.instance) {
+
+            const client = createClient();
+            client.on("error", err => console.log("Redis Client Error", err));
+            await client.connect();
+
             CacheManager.instance = new CacheManager(
-                await createClient()
-                .on("error", (err) => console.log("Redis Client Error", err))
-                .connect()
+                GameRepositoryMongo.getInstance(),
+                client
             );
+
+            await CacheManager.instance.refreshCache(repository);
         }
+
         return CacheManager.instance;
     }
 
-    async reloadCache(games) {
+    async refreshCache(repository) {
         await this.redisClient.flushAll();
+
+        const games = await repository.getAllGames();
 
         await Promise.all(
             games.map(game => {
@@ -45,10 +51,10 @@ export class CacheManager {
     }
 
     async getAllGames() {
-        const keys = await this.redisClient.keys('*');
+        const keys = await this.client.keys('*');
         let games = await Promise.all(
             keys.map(async key => {
-                const data = await this.redisClient.get(key);
+                const data = await this.client.get(key);
                 return JSON.parse(data);
             })
         );
@@ -57,7 +63,7 @@ export class CacheManager {
     }
 
     async getGameByTitle(title) {
-        const keys = await this.redisClient.keys('*');
+        const keys = await this.client.keys('*');
 
         let main = await Promise.all(
             keys.map(async key =>{
@@ -66,7 +72,7 @@ export class CacheManager {
                     .replaceAll(' ', '_')
                     .replaceAll(':', '')
                 )) {
-                    const data = await this.redisClient.get(key)
+                    const data = await this.client.get(key)
                     return JSON.parse(data);
                 }
             })
@@ -81,7 +87,7 @@ export class CacheManager {
                     .replaceAll(' ', '_')
                     .replaceAll(':', '')
                 ) {
-                    const data = await this.redisClient.get(key)
+                    const data = await this.client.get(key)
                     return JSON.parse(data);
                 }
             })
@@ -101,7 +107,7 @@ export class CacheManager {
     }
 
     async setGame(game) {
-        await this.redisClient.set(
+        await this.client.set(
             game.title
             .toUpperCase()
             .replaceAll(' ', '_')
@@ -120,7 +126,7 @@ export class CacheManager {
         /*const game = this.games.filter(game => game.title.toUpperCase() == title.toUpperCase());
         return game[0];*/
 
-        const game = await this.redisClient.get(title
+        const game = await this.client.get(title
             .toUpperCase()
             .replaceAll(' ', '_')
             .replaceAll(':', '')

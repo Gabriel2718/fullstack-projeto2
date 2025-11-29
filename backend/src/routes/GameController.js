@@ -1,6 +1,6 @@
 import express from 'express';
-import { GameRepositoryMongo } from '../config/GameRepositoryMongo.js';
-import { GameService } from '../config/GameService.js';
+import { GameRepositoryMongo } from '../config/repositories/GameRepositoryMongo.js';
+import { GameService } from '../config/services/GameService.js';
 import { Game } from '../models/Game.js'
 import { authMiddleware } from '../config/AuthMiddleware.js';
 import { CacheManager } from '../config/CacheManager.js';
@@ -9,10 +9,14 @@ import validator from "validator";
 import { body } from 'express-validator';
 import logger from '../config/Logger.js';
 
+const gamePostValidator = await GamePostValidator.getInstance();
+const repository = await GameRepositoryMongo.getInstance();
+const cacheManager = await CacheManager.getInstance(repository);
+
 const service = new GameService(
-    await GameRepositoryMongo.getInstance(),
-    await CacheManager.getInstance(),
-    await GamePostValidator.getInstance()
+    repository,
+    cacheManager,
+    gamePostValidator
 );
 
 const route = express.Router();
